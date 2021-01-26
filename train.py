@@ -47,6 +47,9 @@ def fit_one_epoch(G_model, D_model, Combine_model, epoch, epoch_size, gen, Epoch
     print('Epoch:'+ str(epoch+1) + '/' + str(Epoch))
     print('G Loss: %.4f || D Loss: %.4f ' % (G_total_loss/(epoch_size+1),D_total_loss/(epoch_size+1)))
 
+    #----------------------------#
+    #   每10个时代保存一次
+    #----------------------------#
     if (epoch+1) % 10==0:
         G_model.save_weights('logs/G_Epoch%d-GLoss%.4f-DLoss%.4f.h5'%((epoch+1),G_total_loss/(epoch_size+1), D_total_loss/(epoch_size+1)))
         D_model.save_weights('logs/D_Epoch%d-GLoss%.4f-DLoss%.4f.h5'%((epoch+1),G_total_loss/(epoch_size+1), D_total_loss/(epoch_size+1)))
@@ -54,12 +57,14 @@ def fit_one_epoch(G_model, D_model, Combine_model, epoch, epoch_size, gen, Epoch
 
 
 if __name__ == "__main__":
+    #----------------------------#
+    #   生成图片的大小
+    #----------------------------#
     image_shape = [64, 64, 3]
 
-    # 数据集存放路径
-    annotation_path = "train_lines.txt"
-
-    # 生成网络和评价网络
+    #----------------------------#
+    #   生成网络和评价网络
+    #----------------------------#
     G_model = generator(64, image_shape)
     D_model = discriminator(64, image_shape)
 
@@ -68,6 +73,11 @@ if __name__ == "__main__":
     # G_model.load_weights(G_model_path, by_name=True, skip_mismatch=True)
     # D_model.load_weights(D_model_path, by_name=True, skip_mismatch=True)
     
+    #----------------------------#
+    #   txt文件对应的路径
+    #   内部存放训练图片的路径
+    #----------------------------#
+    annotation_path = "train_lines.txt"
     with open(annotation_path) as f:
         lines = f.readlines()
     num_train = len(lines)
@@ -75,6 +85,7 @@ if __name__ == "__main__":
     #------------------------------------------------------#
     #   Init_Epoch为起始世代
     #   Epoch总训练世代
+    #   提示OOM或者显存不足请调小Batch_size
     #------------------------------------------------------#
     if True:
         # 训练参数设置
@@ -82,9 +93,9 @@ if __name__ == "__main__":
         batch_size = 64
         Init_epoch = 0
         Epoch = 500
+        # 每个50个step保存一次图片在result文件夹里
         save_interval = 50
 
-        # Adam optimizer
         D_model.compile(loss="binary_crossentropy", optimizer=Adam(lr, 0.5, 0.999))
 
         noise = layers.Input(shape=(100,))

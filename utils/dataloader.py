@@ -21,7 +21,6 @@ class DCganDataset(keras.utils.Sequence):
     def __len__(self):
         return math.ceil(self.train_batches / float(self.batch_size))
 
-
     def pre_process(self, image, mean, std):
         image = (image/255 - mean)/std
         return image
@@ -34,13 +33,14 @@ class DCganDataset(keras.utils.Sequence):
         lines = self.train_lines
         n = self.train_batches
         for _ in range(self.batch_size):
+            #----------------------------------------------#
+            #   读取图像并进行归一化，归一化到-1-1之间
+            #----------------------------------------------#
             img = Image.open(lines[self.global_index].split()[0]).resize(self.image_size[0:2], Image.BICUBIC)
-            
             img = np.array(img, dtype=np.float32)
 
             img = self.pre_process(img, [0.5,0.5,0.5], [0.5,0.5,0.5])
             images.append(img)
 
             self.global_index = (self.global_index + 1) % n
-            # print(self.global_index)
         return np.array(images)

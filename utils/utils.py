@@ -3,7 +3,11 @@ import itertools
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 def show_result(num_epoch, G_net):
+    #---------------------------------------------------#
+    #   生成5x5的图片
+    #---------------------------------------------------#
     randn_in = np.random.randn(5*5, 100)
 
     test_images = G_net.predict(randn_in)
@@ -23,4 +27,4 @@ def show_result(num_epoch, G_net):
     label = 'Epoch {0}'.format(num_epoch)
     fig.text(0.5, 0.04, label, ha='center')
     plt.savefig("results/epoch_" + str(num_epoch) + "_results.png")
-    plt.close('all')  #避免内存泄漏
+    plt.close('all')

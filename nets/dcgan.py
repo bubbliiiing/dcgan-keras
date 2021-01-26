@@ -7,7 +7,7 @@ from keras.models import Model, Sequential
 
 def conv_out_size_same(size, stride):
     return int(math.ceil(float(size) / float(stride)))
-    
+
 def generator(d=128, image_shape=[64,64,3]):
     conv_options = {
         'kernel_initializer': initializers.normal(mean=0.0, stddev=0.02),
@@ -20,29 +20,55 @@ def generator(d=128, image_shape=[64,64,3]):
 
     inputs = layers.Input([100,])
 
+    #----------------------------------------------#
+    #   当生成的图片是64, 64, 3的时候
+    #----------------------------------------------#
     s_h, s_w = image_shape[0], image_shape[1]
+    # 32, 32
     s_h2, s_w2 = conv_out_size_same(s_h, 2), conv_out_size_same(s_w, 2)
+    # 16, 16
     s_h4, s_w4 = conv_out_size_same(s_h2, 2), conv_out_size_same(s_w2, 2)
+    # 8, 8
     s_h8, s_w8 = conv_out_size_same(s_h4, 2), conv_out_size_same(s_w4, 2)
+    # 4, 4
     s_h16, s_w16 = conv_out_size_same(s_h8, 2), conv_out_size_same(s_w8, 2)
 
+    #----------------------------------------------#
+    #   100, -> 8192, 
+    #----------------------------------------------#
     x = layers.Dense(s_h16*s_w16*d*8, **conv_options)(inputs)
+
+    #----------------------------------------------#
+    #   8192, -> 4, 4, 512 
+    #----------------------------------------------#
     x = layers.Reshape([s_h16,s_w16,d*8])(x)
     x = layers.BatchNormalization(**batchnor_options)(x)
     x = layers.Activation("relu")(x)
  
+    #----------------------------------------------#
+    #   4, 4, 512 -> 8, 8, 256 
+    #----------------------------------------------#
     x = layers.Conv2DTranspose(filters=d*4, kernel_size=4, strides=2, padding="same", **conv_options)(x)
     x = layers.BatchNormalization(**batchnor_options)(x)
     x = layers.Activation("relu")(x)
 
+    #----------------------------------------------#
+    #   8, 8, 256 -> 16, 16, 128 
+    #----------------------------------------------#
     x = layers.Conv2DTranspose(filters=d*2, kernel_size=4, strides=2, padding="same", **conv_options)(x)
     x = layers.BatchNormalization(**batchnor_options)(x)
     x = layers.Activation("relu")(x)
 
+    #----------------------------------------------#
+    #   16, 16, 128 -> 32, 32, 64 
+    #----------------------------------------------#
     x = layers.Conv2DTranspose(filters=d, kernel_size=4, strides=2, padding="same", **conv_options)(x)
     x = layers.BatchNormalization(**batchnor_options)(x)
     x = layers.Activation("relu")(x)
 
+    #----------------------------------------------#
+    #   32, 32, 64 -> 64, 64, 3 
+    #----------------------------------------------#
     x = layers.Conv2DTranspose(filters=3, kernel_size=4, strides=2, padding="same", **conv_options)(x)
     x = layers.Activation("tanh")(x)
     
@@ -59,24 +85,39 @@ def discriminator(d=128, image_shape=[64,64,3]):
         'momentum'          : 0.9
     }
 
+    #----------------------------------------------#
+    #   64, 64, 3 -> 32, 32, 64
+    #----------------------------------------------#
     inputs = layers.Input(image_shape)
     x = layers.Conv2D(filters=d, kernel_size=4, strides=2, padding="same", **conv_options)(inputs)
     x = layers.LeakyReLU(0.2)(x)
 
+    #----------------------------------------------#
+    #   32, 32, 64 -> 16, 16, 128
+    #----------------------------------------------#
     x = layers.Conv2D(filters=2*d, kernel_size=4, strides=2, padding="same", **conv_options)(x)
     x = layers.BatchNormalization(**batchnor_options)(x)
     x = layers.LeakyReLU(0.2)(x)
 
+    #----------------------------------------------#
+    #   16, 16, 128 -> 8, 8, 256
+    #----------------------------------------------#
     x = layers.Conv2D(filters=4*d, kernel_size=4, strides=2, padding="same", **conv_options)(x)
     x = layers.BatchNormalization(**batchnor_options)(x)
     x = layers.LeakyReLU(0.2)(x)
 
+    #----------------------------------------------#
+    #   8, 8, 256 -> 4, 4, 512
+    #----------------------------------------------#
     x = layers.Conv2D(filters=8*d, kernel_size=4, strides=2, padding="same", **conv_options)(x)
     x = layers.BatchNormalization(**batchnor_options)(x)
     x = layers.LeakyReLU(0.2)(x)
 
     x = layers.Flatten()(x)
 
+    #----------------------------------------------#
+    #   4*4*512, -> 1, 
+    #----------------------------------------------#
     x = layers.Dropout(0.3)(x)
     x = layers.Dense(1, **conv_options)(x)
     x = layers.Activation("sigmoid")(x)
@@ -85,9 +126,11 @@ def discriminator(d=128, image_shape=[64,64,3]):
     return model
 
 def combine_model(generator, discriminator, optimizer, latent_dim=100):
-    # conbine是生成模型和判别模型的结合
-    # 判别模型的trainable为False
-    # 用于训练生成模型
+    #----------------------------------------------#
+    #   conbine是生成模型和判别模型的结合
+    #   判别模型的trainable为False
+    #   用于训练生成模型
+    #----------------------------------------------#
     z = layers.Input(shape=(1, 1, latent_dim))
     img = generator(z)
 
@@ -99,7 +142,5 @@ def combine_model(generator, discriminator, optimizer, latent_dim=100):
     return combine_model
 
 if __name__ == "__main__":
-    # model = generator(128)
-    # model.summary()
     model = discriminator(128)
     model.summary()
