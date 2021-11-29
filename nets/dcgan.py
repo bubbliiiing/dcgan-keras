@@ -1,14 +1,13 @@
 import math
 
-import keras
 from keras import initializers, layers
-from keras.models import Model, Sequential
+from keras.models import Model
 
 
 def conv_out_size_same(size, stride):
     return int(math.ceil(float(size) / float(stride)))
 
-def generator(d=128, image_shape=[64,64,3]):
+def generator(d = 128, input_shape = [64, 64]):
     conv_options = {
         'kernel_initializer': initializers.normal(mean=0.0, stddev=0.02),
     }
@@ -23,7 +22,7 @@ def generator(d=128, image_shape=[64,64,3]):
     #----------------------------------------------#
     #   当生成的图片是64, 64, 3的时候
     #----------------------------------------------#
-    s_h, s_w = image_shape[0], image_shape[1]
+    s_h, s_w = input_shape[0], input_shape[1]
     # 32, 32
     s_h2, s_w2 = conv_out_size_same(s_h, 2), conv_out_size_same(s_w, 2)
     # 16, 16
@@ -75,7 +74,7 @@ def generator(d=128, image_shape=[64,64,3]):
     model = Model(inputs, x)
     return model
 
-def discriminator(d=128, image_shape=[64,64,3]):
+def discriminator(d = 128, input_shape = [64, 64]):
     conv_options = {
         'kernel_initializer': initializers.normal(mean=0., stddev=0.02),
     }
@@ -88,7 +87,7 @@ def discriminator(d=128, image_shape=[64,64,3]):
     #----------------------------------------------#
     #   64, 64, 3 -> 32, 32, 64
     #----------------------------------------------#
-    inputs = layers.Input(image_shape)
+    inputs = layers.Input([input_shape[0], input_shape[1], 3])
     x = layers.Conv2D(filters=d, kernel_size=4, strides=2, padding="same", **conv_options)(inputs)
     x = layers.LeakyReLU(0.2)(x)
 
@@ -124,22 +123,6 @@ def discriminator(d=128, image_shape=[64,64,3]):
     
     model = Model(inputs, x)
     return model
-
-def combine_model(generator, discriminator, optimizer, latent_dim=100):
-    #----------------------------------------------#
-    #   conbine是生成模型和判别模型的结合
-    #   判别模型的trainable为False
-    #   用于训练生成模型
-    #----------------------------------------------#
-    z = layers.Input(shape=(1, 1, latent_dim))
-    img = generator(z)
-
-    discriminator.trainable = False
-
-    valid = discriminator(img)
-
-    combine_model = Model(z, valid)
-    return combine_model
 
 if __name__ == "__main__":
     model = discriminator(128)

@@ -1,46 +1,39 @@
 import math
 from random import shuffle
 
-import cv2
 import keras
 import numpy as np
-from matplotlib.colors import hsv_to_rgb, rgb_to_hsv
 from PIL import Image
+
+from .utils import cvtColor
 
 
 class DCganDataset(keras.utils.Sequence):
-    def __init__(self, train_lines, image_size, batch_size):
+    def __init__(self, train_lines, input_shape, batch_size):
         super(DCganDataset, self).__init__()
 
-        self.train_lines = train_lines
-        self.train_batches = len(train_lines)
-        self.image_size = image_size
-        self.batch_size = batch_size
-        self.global_index = 0
+        self.train_lines    = train_lines
+        self.train_batches  = len(train_lines)
+        self.input_shape    = input_shape
+        self.batch_size     = batch_size
 
     def __len__(self):
         return math.ceil(self.train_batches / float(self.batch_size))
 
-    def pre_process(self, image, mean, std):
+    def preprocess_input(self, image, mean, std):
         image = (image/255 - mean)/std
         return image
 
     def __getitem__(self, index):
-        if self.global_index == 0:
-            shuffle(self.train_lines)
-
         images = []
-        lines = self.train_lines
-        n = self.train_batches
-        for _ in range(self.batch_size):
-            #----------------------------------------------#
-            #   读取图像并进行归一化，归一化到-1-1之间
-            #----------------------------------------------#
-            img = Image.open(lines[self.global_index].split()[0]).resize(self.image_size[0:2], Image.BICUBIC)
-            img = np.array(img, dtype=np.float32)
+        for i in range(index * self.batch_size, (index + 1) * self.batch_size):  
+            i       = i % self.train_batches
+            image   = Image.open(self.train_lines[i].split()[0])
+            image   = cvtColor(image).resize([self.input_shape[1], self.input_shape[0]], Image.BICUBIC)
 
-            img = self.pre_process(img, [0.5,0.5,0.5], [0.5,0.5,0.5])
-            images.append(img)
-
-            self.global_index = (self.global_index + 1) % n
+            image   = np.array(image, dtype=np.float32)
+            images.append(self.preprocess_input(image, 0.5, 0.5))
         return np.array(images)
+
+    def on_epoch_begin(self):
+        shuffle(self.train_lines)

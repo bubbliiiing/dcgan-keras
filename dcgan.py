@@ -1,6 +1,4 @@
-import copy
 import itertools
-import os
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,14 +8,23 @@ from nets.dcgan import generator
 
 
 #---------------------------------------------#
-#   注意修改model_path、channel和image_shape
+#   注意修改model_path、channel和input_shape
 #   需要和训练时的设置一样。
 #---------------------------------------------#
 class DCGAN(object):
     _defaults = {
+        #-----------------------------------------------#
+        #   model_path指向logs文件夹下的权值文件
+        #-----------------------------------------------#
         "model_path"        : 'model_data/Generator_Flower.h5',
+        #-----------------------------------------------#
+        #   卷积通道数的设置
+        #-----------------------------------------------#
         "channel"           : 64,
-        "image_shape"       : [64, 64, 3],
+        #-----------------------------------------------#
+        #   输入图像大小的设置
+        #-----------------------------------------------#
+        "input_shape"       : [64, 64],
     }
 
     #---------------------------------------------------#
@@ -31,14 +38,14 @@ class DCGAN(object):
     #   创建生成模型
     #---------------------------------------------------#
     def generate(self):
-        self.net = generator(self.channel, self.image_shape)
+        self.net = generator(self.channel, self.input_shape)
         self.net.load_weights(self.model_path)
         print('{} model loaded.'.format(self.model_path))
 
     #---------------------------------------------------#
     #   生成5x5的图片
     #---------------------------------------------------#
-    def generate_5x5_image(self):
+    def generate_5x5_image(self, save_path):
         randn_in = np.random.randn(5*5, 100)
         test_images = self.net.predict(randn_in)
 
@@ -59,18 +66,17 @@ class DCGAN(object):
 
         label = 'predict_5x5_results'
         fig.text(0.5, 0.04, label, ha='center')
-        plt.savefig("predict_5x5_results.png")
+        plt.savefig(save_path)
 
     #---------------------------------------------------#
     #   生成1x1的图片
     #---------------------------------------------------#
-    def generate_1x1_image(self):
+    def generate_1x1_image(self, save_path):
         randn_in = np.random.randn(1, 100)
         test_images = self.net.predict(randn_in)
         
         test_images = (test_images[0] * 0.5 + 0.5) * 255
-        Image.fromarray(np.uint8(test_images)).save("predict_1x1_results.png")
-
+        Image.fromarray(np.uint8(test_images)).save(save_path)
 
 
 
