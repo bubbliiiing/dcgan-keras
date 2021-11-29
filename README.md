@@ -16,10 +16,10 @@ keras==2.1.5
 为了验证模型的有效性，我使用了**花的例子**进行了训练。    
 训练好的生成器与判别器模型[Generator_Flower.h5](https://github.com/bubbliiiing/dcgan-keras/releases/download/v1.0/Generator_Flower.h5)、[Discriminator_Flower.h5](https://github.com/bubbliiiing/dcgan-keras/releases/download/v1.0/Discriminator_Flower.h5)可以通过百度网盘下载或者通过GITHUB下载    
 权值的百度网盘地址如下：    
-链接: https://pan.baidu.com/s/1ycjHEJI6L5aFZl5pZOjjXQ 提取码: qegk     
+链接: https://pan.baidu.com/s/1U1PtEqDWW0Xg_zYpxwqn0A 提取码: 56kb  
 
 花的数据集可以通过百度网盘下载：   
-链接: https://pan.baidu.com/s/1s7ccPiWYCTCd3eRETdRy6Q 提取码: sdup   
+链接: https://pan.baidu.com/s/1ITA1Lw_K28B3nbNPnI3_Kw 提取码: 11yt   
 
 ## 预测步骤
 ### a、使用预训练权重
