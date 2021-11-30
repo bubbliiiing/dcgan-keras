@@ -23,7 +23,7 @@ keras==2.1.5
 
 ## 预测步骤
 ### a、使用预训练权重
-1. 下载完库后解压，直接运行predict.py，在终端点击enter，即可生成图片，生成图片位于根目录的predict_1x1_results.png，predict_5x5_results.png。    
+1. 下载完库后解压，直接运行predict.py，在终端点击enter，即可生成图片，生成图片位于results/predict_out/predict_1x1_results.png，results/predict_out/predict_5x5_results.png。    
 ### b、使用自己训练的权重 
 1. 按照训练步骤训练。    
 2. 在dcgan.py文件里面，在如下部分修改model_path使其对应训练好的文件；**model_path对应logs文件夹下面的权值文件**。    
@@ -44,9 +44,9 @@ _defaults = {
 }
 
 ```
-3. 运行predict.py，在终端点击enter，即可生成图片，生成图片位于根目录的predict_1x1_results.png，predict_5x5_results.png。   
+3. 运行predict.py，在终端点击enter，即可生成图片，生成图片位于results/predict_out/predict_1x1_results.png，results/predict_out/predict_5x5_results.png。    
 
 ## 训练步骤
 1. 训练前将期望生成的图片文件放在datasets文件夹下（参考花的数据集）。  
 2. 运行根目录下面的txt_annotation.py，生成train_lines.txt，保证train_lines.txt内部是有文件路径内容的。  
-3. 运行train.py文件进行训练，训练过程中生成的图片可查看results文件夹下的图片。  
+3. 运行train.py文件进行训练，训练过程中生成的图片可查看results/train_out文件夹下的图片。  
