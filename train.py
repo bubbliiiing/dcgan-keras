@@ -66,6 +66,10 @@ if __name__ == "__main__":
     #   提示OOM或者显存不足请调小Batch_size
     #------------------------------------------------------#
     if True:
+        epoch_step      = num_train // batch_size
+        if epoch_step == 0:
+            raise ValueError("数据集过小，无法进行训练，请扩充数据集。")
+
         D_model.compile(loss="binary_crossentropy", optimizer=Adam(lr, 0.5, 0.999))
 
         D_model.trainable = False
@@ -77,10 +81,6 @@ if __name__ == "__main__":
         Combine_model.compile(loss="binary_crossentropy", optimizer=Adam(lr, 0.5, 0.999))
 
         gen = DCganDataset(lines, input_shape, batch_size)
-
-        epoch_step      = num_train // batch_size
-        if epoch_step == 0:
-            raise ValueError("数据集过小，无法进行训练，请扩充数据集。")
 
         for epoch in range(Init_epoch, Epoch):
             fit_one_epoch(G_model, D_model, Combine_model, epoch, epoch_step, gen, Epoch, batch_size, save_interval)
