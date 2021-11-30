@@ -25,6 +25,8 @@ class DCganDataset(keras.utils.Sequence):
         return image
 
     def __getitem__(self, index):
+        if index == 0:
+            self.on_epoch_begin()
         images = []
         for i in range(index * self.batch_size, (index + 1) * self.batch_size):  
             i       = i % self.train_batches
