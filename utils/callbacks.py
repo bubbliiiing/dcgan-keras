@@ -10,7 +10,8 @@ class LossHistory():
     def __init__(self, log_dir):
         self.log_dir    = log_dir
         
-        os.makedirs(self.log_dir)
+        if not os.path.exists(self.log_dir):
+            os.makedirs(self.log_dir)
 
     def append_loss(self, epoch, **kwargs):
         if not os.path.exists(self.log_dir):
