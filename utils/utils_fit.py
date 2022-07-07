@@ -5,7 +5,7 @@ from tqdm import tqdm
 from utils.utils import show_result
 
 
-def fit_one_epoch(G_model, D_model, Combine_model, epoch, epoch_step, gen, Epoch, batch_size, save_interval):
+def fit_one_epoch(G_model, D_model, Combine_model, loss_history, epoch, epoch_step, gen, Epoch, save_period, save_dir, photo_save_step):
     G_total_loss = 0
     D_total_loss = 0
 
@@ -13,8 +13,9 @@ def fit_one_epoch(G_model, D_model, Combine_model, epoch, epoch_step, gen, Epoch
         for iteration, images in enumerate(gen):
             if iteration >= epoch_step:
                 break
-            y_real                  = np.ones([batch_size,1])
-            y_fake                  = np.zeros([batch_size,1])
+            batch_size  = np.shape(images)[0]
+            y_real      = np.ones([batch_size, 1])
+            y_fake      = np.zeros([batch_size, 1])
 
             #----------------------------------------------------#
             #   先训练评价器
@@ -42,17 +43,22 @@ def fit_one_epoch(G_model, D_model, Combine_model, epoch, epoch_step, gen, Epoch
                                 'lr'        : K.get_value(D_model.optimizer.lr)},)
             pbar.update(1)
 
-            if iteration % save_interval == 0:
+            if iteration % photo_save_step == 0:
                 show_result(epoch+1,G_model)
 
+    G_total_loss = G_total_loss / epoch_step
+    D_total_loss = D_total_loss / epoch_step
+
     print('Epoch:'+ str(epoch + 1) + '/' + str(Epoch))
-    print('G Loss: %.4f || D Loss: %.4f ' % (G_total_loss / (epoch_step + 1), D_total_loss / (epoch_step + 1)))
-    print('Saving state, iter:', str(epoch + 1))
+    print('G Loss: %.4f || D Loss: %.4f ' % (G_total_loss, D_total_loss))
+    loss_history.append_loss(epoch + 1, G_total_loss = G_total_loss, D_total_loss = D_total_loss)
 
     #----------------------------#
-    #   每10个时代保存一次
+    #   每若干个世代保存一次
     #----------------------------#
-    if (epoch + 1) % 10==0:
-        G_model.save_weights('logs/G_Epoch%d-GLoss%.4f-DLoss%.4f.h5'%(epoch + 1, G_total_loss / (epoch_step + 1), D_total_loss / (epoch_step + 1)))
-        D_model.save_weights('logs/D_Epoch%d-GLoss%.4f-DLoss%.4f.h5'%(epoch + 1, G_total_loss / (epoch_step + 1), D_total_loss / (epoch_step + 1)))
-        print('Saving state, iter:', str(epoch + 1))
+    if (epoch + 1) % save_period == 0 or epoch + 1 == Epoch:
+        G_model.save_weights('logs/G_Epoch%d-GLoss%.4f-DLoss%.4f.h5'%(epoch + 1, G_total_loss, D_total_loss))
+        D_model.save_weights('logs/D_Epoch%d-GLoss%.4f-DLoss%.4f.h5'%(epoch + 1, G_total_loss, D_total_loss))
+
+    G_model.save_weights('logs/G_model_last_epoch_weights.h5'%(epoch + 1, G_total_loss, D_total_loss))
+    D_model.save_weights('logs/D_model_last_epoch_weights.h5'%(epoch + 1, G_total_loss, D_total_loss))
