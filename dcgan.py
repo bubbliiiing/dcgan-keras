@@ -83,6 +83,3 @@ class DCGAN(object):
         
         test_images = postprocess_output(test_images[0])
         Image.fromarray(np.uint8(test_images)).save(save_path)
-
-
-
