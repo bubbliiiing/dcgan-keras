@@ -12,7 +12,7 @@ from keras.utils.multi_gpu_utils import multi_gpu_model
 
 from nets.dcgan import discriminator, generator
 from utils.callbacks import LossHistory
-from utils.dataloader import DCganDataset
+from utils.dataloader import DCganDataset, OrderedEnqueuer
 from utils.utils import get_lr_scheduler, show_config
 from utils.utils_fit import fit_one_epoch
 
@@ -176,8 +176,15 @@ if __name__ == "__main__":
 
         Combine_model.compile(loss="binary_crossentropy", optimizer=optimizer)
 
-        gen = DCganDataset(lines, input_shape, batch_size)
+        train_dataloader    = DCganDataset(lines, input_shape, batch_size)
 
+        #---------------------------------------#
+        #   构建多线程数据加载器
+        #---------------------------------------#
+        gen_enqueuer        = OrderedEnqueuer(train_dataloader, use_multiprocessing=True if num_workers > 1 else False, shuffle=True)
+        gen_enqueuer.start(workers=num_workers, max_queue_size=10)
+        gen                 = gen_enqueuer.get()
+        
         for epoch in range(Init_Epoch, Epoch):
 
             K.set_value(Combine_model.optimizer.lr, lr_scheduler_func(epoch))
