@@ -60,5 +60,5 @@ def fit_one_epoch(G_model, D_model, Combine_model, loss_history, epoch, epoch_st
         G_model.save_weights('logs/G_Epoch%d-GLoss%.4f-DLoss%.4f.h5'%(epoch + 1, G_total_loss, D_total_loss))
         D_model.save_weights('logs/D_Epoch%d-GLoss%.4f-DLoss%.4f.h5'%(epoch + 1, G_total_loss, D_total_loss))
 
-    G_model.save_weights('logs/G_model_last_epoch_weights.h5'%(epoch + 1, G_total_loss, D_total_loss))
-    D_model.save_weights('logs/D_model_last_epoch_weights.h5'%(epoch + 1, G_total_loss, D_total_loss))
+    G_model.save_weights('logs/G_model_last_epoch_weights.h5')
+    D_model.save_weights('logs/D_model_last_epoch_weights.h5')
