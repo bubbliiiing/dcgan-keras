@@ -168,11 +168,15 @@ if __name__ == "__main__":
 
         D_model.compile(loss="binary_crossentropy", optimizer=optimizer)
 
-        D_model.trainable = False
-        noise           = layers.Input(shape=(100,))
-        img             = G_model(noise)
-        valid           = D_model(img)
-        Combine_model   = Model(noise, valid)
+        D_model.trainable   = False
+        noise               = layers.Input(shape=(100,))
+        img                 = G_model(noise)
+        valid               = D_model(img)
+        Combine_model_body  = Model(noise, valid)
+        if ngpus_per_node > 1:
+            Combine_model = multi_gpu_model(Combine_model_body, gpus=ngpus_per_node)
+        else:
+            Combine_model = Combine_model_body
 
         Combine_model.compile(loss="binary_crossentropy", optimizer=optimizer)
 
@@ -190,4 +194,4 @@ if __name__ == "__main__":
             K.set_value(Combine_model.optimizer.lr, lr_scheduler_func(epoch))
             K.set_value(D_model.optimizer.lr, lr_scheduler_func(epoch))
 
-            fit_one_epoch(G_model, D_model, Combine_model, loss_history, epoch, epoch_step, gen, Epoch, save_period, save_dir, photo_save_step)
+            fit_one_epoch(G_model, D_model, Combine_model, G_model_body, D_model_body, loss_history, epoch, epoch_step, gen, Epoch, save_period, save_dir, photo_save_step)
